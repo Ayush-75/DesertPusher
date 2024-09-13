@@ -3,7 +3,6 @@ package com.example.desertpusher
 import android.content.ActivityNotFoundException
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -12,6 +11,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LifecycleObserver
 import com.example.desertpusher.databinding.ActivityMainBinding
 import timber.log.Timber
+const val KEY_REVENUE = "revenue_key"
+const val KEY_DESSERT_SOLD = "dessert_sold_key"
+const val KEY_TIMER_SECONDS = "timer_seconds_key"
 
 class MainActivity : AppCompatActivity(), LifecycleObserver {
 
@@ -19,6 +21,7 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     private var revenue = 0
     private var dessertsSold = 0
+    private lateinit var dessertTimer: DessertTimer
 
     private lateinit var binding: ActivityMainBinding
 
@@ -44,11 +47,21 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Timber.tag(TAG).d("onCreate: gets triggered")
+        Timber.i("onCreate: gets triggered")
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         binding.dessertButton.setOnClickListener {
             onDessertClicked()
+        }
+        dessertTimer = DessertTimer(this.lifecycle)
+
+        if (savedInstanceState != null) {
+            // Get all the game state information from the bundle, set it
+            revenue = savedInstanceState.getInt(KEY_REVENUE, 0)
+            dessertsSold = savedInstanceState.getInt(KEY_DESSERT_SOLD, 0)
+            dessertTimer.secondsCount = savedInstanceState.getInt(KEY_TIMER_SECONDS, 0)
+            showCurrentDessert()
+
         }
 
         binding.revenue = revenue
@@ -106,33 +119,47 @@ class MainActivity : AppCompatActivity(), LifecycleObserver {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_REVENUE,revenue)
+        outState.putInt(KEY_DESSERT_SOLD,dessertsSold)
+        outState.putInt(KEY_TIMER_SECONDS,dessertTimer.secondsCount)
+        Timber.i("onSaveInstance called")
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+    }
+
     override fun onStart() {
         super.onStart()
-        Timber.tag(TAG).d("onStart: gets triggered")
+        Timber.i("onStart: gets triggered")
+//        dessertTimer.startTimer()
     }
 
     override fun onStop() {
         super.onStop()
-        Timber.tag(TAG).d("onStop: gets triggered")
+        Timber.i("onStop: gets triggered")
+//        dessertTimer.stopTimer()
     }
 
     override fun onPause() {
         super.onPause()
-        Timber.tag(TAG).d("onPause: gets triggered")
+        Timber.i("onPause: gets triggered")
     }
 
     override fun onRestart() {
         super.onRestart()
-        Timber.tag(TAG).d("onRestart: gets triggered")
+        Timber.i("onRestart: gets triggered")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Timber.tag(TAG).d("onDestroy: gets triggered")
+        Timber.i("onDestroy: gets triggered")
     }
 
     override fun onResume() {
         super.onResume()
-        Timber.tag(TAG).d("onResume: gets triggered")
+        Timber.i("onResume: gets triggered")
     }
 }
